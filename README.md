@@ -150,11 +150,21 @@ GitHub App 的安装范围以及 OAuth App 的授权范围，决定了第三方�
 
 ### 5.4 私有仓库的权限边界
 
-个人账号的私有仓库向 Collaborator 提供 Git 写权限。保存重要配置和密钥备份的仓库应由所有者独占写入权限：单仓库部署时由 `.INBOX` 承担，多仓库部署时可交给 `.INBOX_DATA`。邀请好友参与的私有投递仓库只承担通信，不放置私钥、Secrets 或受信任的管理工作流，并禁用 Actions；在平台与套餐支持时，可以使用 Rulesets 限制 Git 引用修改。Rulesets 保护 Git 引用，其他操作仍受仓库角色权限约束。组织仓库的细粒度只读角色可作为可选高级方案。[GitHub 权限说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/repository-access-and-collaboration/permission-levels-for-a-personal-account-repository)。
+个人账号的私有仓库向 Collaborator 提供 Git 写权限。保存重要配置和密钥备份的仓库应由所有者独占写入权限：单仓库部署时由 `.INBOX` 承担，多仓库部署时可交给 `.INBOX_DATA`。邀请好友参与的私有投递仓库只承担通信，不放置私钥、Secrets 或受信任的管理工作流，并禁用 Actions；在平台与套餐支持时，可以使用 Rulesets 限制 Git 引用修改。Rulesets 保护 Git 引用，其他操作仍受仓库角色权限约束。GitHub 权限说明。
 
 隔离式私有信箱将通信元数据限制在各自的授权范围内。GitHub 平台与获授权的应用仍可处理相应数据；撤销访问权限影响之后的访问，历史上已下载的副本由接收方持有。
 
-### 5.5 删除、备份与可恢复性
+### 5.5 基于组织的安全隔离
+
+需要更严格权限控制的用户，可以使用独立的 GitHub Organization 托管私有数据与通信仓库。公开 `.INBOX` 仍可保留在个人账号下，承担身份发现与普通投递；`.INBOX_DATA`、`.INBOX_PRIVATE` 和 `.INBOX_<随机ID>` 则按需由组织持有。私有仓库的位置通过经过签名的身份配置或加密邀请告知客户端，协议根据仓库 ID 和访问授权完成同步。
+
+组织仓库提供细粒度权限。邮箱所有者可以将联系人添加为具有 **Read** 权限的外部协作者，使其访问私有 Discussions 并参与通信，同时保留 Git 内容、工作流与仓库设置的管理权限。组织可以单独控制只读用户创建 Discussion 的权限；使用这一模式时，应允许已授权的只读联系人创建讨论，并将组织成员的默认仓库权限设置为最小范围。[组织仓库角色](https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization)和[Discussions 创建权限](https://docs.github.com/en/organizations/managing-organization-settings/managing-discussion-creation-for-repositories-in-your-organization)由 GitHub 原生管理。
+
+组织所有者还可以限制第三方应用访问：启用 OAuth App 访问审批，限定 GitHub Apps 只能由组织所有者安装，并对个人访问令牌（PAT）设置访问、有效期或审批策略。这样，个人账号中已授权的应用只有取得相应组织权限后才能访问组织的私有仓库。邮箱客户端及自动化服务则使用获得授权的最小权限凭据访问数据。[组织程序化访问管理](https://docs.github.com/en/organizations/managing-programmatic-access-to-your-organization)。
+
+这种部署将通信授权、Git 写入权限和第三方应用访问控制交给组织管理。组织所有者及获批准的应用仍具有相应的访问能力，因此内容加密、身份签名与密码保护的私钥备份继续由客户端执行。个人仓库和组织仓库采用同一套协议，用户可以按自己的安全需求选择部署方式。
+
+### 5.6 删除、备份与可恢复性
 
 Git 历史和 Repository Activity 可用于调查篡改、Push 与 Force Push；独立本地备份负责恢复。仓库可能被删除，旧 Git 对象也可能在重整历史后无法找回。客户端应提供独立的本地加密备份与恢复工具。
 
